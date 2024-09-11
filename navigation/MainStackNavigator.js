@@ -6,6 +6,7 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import SignInScreen from '../screens/SignInScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import ApiTestPage from '../screens/ApiTestPage';
+import CardSwiperScreen from '../screens/CardSwiperScreen';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +18,7 @@ const MainStackNavigator = () => {
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="ApiTestPage" component={ApiTestPage} />
+        <Stack.Screen name="CardSwiper" component={CardSwiperScreen} />
       </Stack.Navigator>
     
   );
