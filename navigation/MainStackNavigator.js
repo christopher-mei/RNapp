@@ -7,6 +7,9 @@ import SignInScreen from '../screens/SignInScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import ApiTestPage from '../screens/ApiTestPage';
 import CardSwiperScreen from '../screens/CardSwiperScreen';
+import ManageCardsScreen from '../screens/ManageCardsScreen';
+import EditCardScreen from '../screens/EditCardScreen';
+import ViewCardScreen from '../screens/ViewCardScreen';
 
 const Stack = createStackNavigator();
 
@@ -19,6 +22,9 @@ const MainStackNavigator = () => {
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="ApiTestPage" component={ApiTestPage} />
         <Stack.Screen name="CardSwiper" component={CardSwiperScreen} />
+        <Stack.Screen name="ManageCards" component={ManageCardsScreen} />
+        <Stack.Screen name="EditCard" component={EditCardScreen} />
+        <Stack.Screen name="ViewCard" component={ViewCardScreen} />
       </Stack.Navigator>
     
   );

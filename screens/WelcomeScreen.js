@@ -16,6 +16,9 @@ const WelcomeScreen = ({ navigation }) => {
       <View style={styles.cardSwiperButtonContainer}>
         <Button title="Card Swiper" onPress={() => navigation.navigate('CardSwiper')} />
       </View>
+      <View style={styles.manageCardsButtonContainer}>
+        <Button title="Manage Cards" onPress={() => navigation.navigate('ManageCards')} />
+      </View>
     </View>
   );
 };
@@ -42,6 +45,10 @@ const styles = StyleSheet.create({
   },
   cardSwiperButtonContainer: {
     width: '30%',
+  },
+  manageCardsButtonContainer: {
+    width: '30%',
+    marginTop: 20,
   },
 });
 

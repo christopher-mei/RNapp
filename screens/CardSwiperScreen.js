@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import CardStack, { Card } from 'react-native-card-stack-swiper';
 
 const CardSwiperScreen = () => {
+  const swiperRef = useRef(null);
   const cards = [
     { id: 1, text: 'Card 1', image: 'https://via.placeholder.com/300' },
     { id: 2, text: 'Card 2', image: 'https://via.placeholder.com/300' },
@@ -14,7 +15,7 @@ const CardSwiperScreen = () => {
       <CardStack
         style={styles.cardStack}
         cardContainerStyle={styles.cardContainer}
-        ref={swiper => { this.swiper = swiper }}
+        ref={swiperRef}
         renderNoMoreCards={() => <Text style={styles.noMoreCardsText}>No more cards</Text>}
       >
         {cards.map(card => (
@@ -26,14 +27,14 @@ const CardSwiperScreen = () => {
       </CardStack>
       <View style={styles.buttonsWrapper}>
         <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={styles.button} onPress={() => { this.swiper.swipeLeft() }}>
+          <TouchableOpacity style={styles.button} onPress={() => { swiperRef.current.swipeLeft() }}>
             <Text style={styles.buttonText}>← swipe left</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => { this.swiper.swipeRight() }}>
+          <TouchableOpacity style={styles.button} onPress={() => { swiperRef.current.swipeRight() }}>
             <Text style={styles.buttonText}>swipe right →</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.resetButton} onPress={() => { this.swiper.goBackFromTop() }}>
+        <TouchableOpacity style={styles.resetButton} onPress={() => { swiperRef.current.goBackFromTop() }}>
           <Text style={styles.resetButtonText}>undo</Text>
         </TouchableOpacity>
       </View>
