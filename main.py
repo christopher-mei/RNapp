@@ -1,4 +1,4 @@
-# main.py
+import os
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -83,3 +83,8 @@ def delete_card(card_id: int, db: Session = Depends(get_db)):
     db.delete(db_card)
     db.commit()
     return db_card
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)
