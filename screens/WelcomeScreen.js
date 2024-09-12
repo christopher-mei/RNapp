@@ -13,6 +13,12 @@ const WelcomeScreen = ({ navigation }) => {
       <View style={styles.apiTestButtonContainer}>
         <Button title="API Connection Test" onPress={() => navigation.navigate('ApiTestPage')} />
       </View>
+      <View style={styles.cardSwiperButtonContainer}>
+        <Button title="Card Swiper" onPress={() => navigation.navigate('CardSwiper')} />
+      </View>
+      <View style={styles.manageCardsButtonContainer}>
+        <Button title="Manage Cards" onPress={() => navigation.navigate('ManageCards')} />
+      </View>
     </View>
   );
 };
@@ -34,7 +40,15 @@ const styles = StyleSheet.create({
     marginBottom: 80, // Add some space between the rows
   },
   apiTestButtonContainer: {
-    width: '30%', // Adjust the width as needed
+    width: '30%',
+    marginBottom: 40, // Adjust the width as needed
+  },
+  cardSwiperButtonContainer: {
+    width: '30%',
+  },
+  manageCardsButtonContainer: {
+    width: '30%',
+    marginTop: 20,
   },
 });
 
