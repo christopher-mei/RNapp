@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from models import Card, SessionLocal, engine
 import schemas
@@ -26,6 +27,22 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Welcome to FastAPI</title>
+    </head>
+    <body>
+        <h1>Welcome to FastAPI</h1>
+        <p>This is the landing page of your FastAPI application.</p>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 @app.post("/cards/", response_model=schemas.Card)
 def create_card(card: schemas.CardCreate, db: Session = Depends(get_db)):
