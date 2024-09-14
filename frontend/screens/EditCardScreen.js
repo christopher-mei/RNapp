@@ -3,28 +3,59 @@ import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import api from '../api';
 
 const EditCardScreen = ({ route, navigation }) => {
   const { id } = route.params;
+  const queryClient = useQueryClient();
+
+  // Fetch card details if editing an existing card
+  const { data: card, isLoading } = useQuery(['card', id], async () => {
+    if (id !== null) {
+      const response = await api.get(`/cards/${id}`);
+      return response.data;
+    }
+    return { title: '', image: '' }; // Default values for a new card
+  }, {
+    enabled: id !== null, // Only fetch if id is not null
+  });
+
+  // Add or edit card mutation
+  const saveCardMutation = useMutation(
+    async (cardData) => {
+      if (id === null) {
+        const response = await api.post('/cards/', cardData);
+        return response.data;
+      } else {
+        const response = await api.put(`/cards/${id}`, cardData);
+        return response.data;
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('cards');
+        navigation.goBack();
+      },
+    }
+  );
 
   const cardSchema = Yup.object().shape({
     title: Yup.string().required('Title is required'),
-    description: Yup.string().required('Description is required'),
+    image: Yup.string().required('Image is required'),
   });
 
-  const saveCard = (values) => {
-    // Save the card details (you can implement the logic to update the card in the state or backend)
-    console.log(values);
-    navigation.goBack();
-  };
+  if (isLoading) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Edit Card {id}</Text>
+      <Text style={styles.label}>{id === null ? 'Add Card' : `Edit Card ${id}`}</Text>
       <Formik
-        initialValues={{ title: '', description: '' }}
+        initialValues={{ title: card.title, image: card.image }}
         validationSchema={cardSchema}
-        onSubmit={saveCard}
+        onSubmit={(values) => saveCardMutation.mutate(values)}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View>
@@ -38,12 +69,12 @@ const EditCardScreen = ({ route, navigation }) => {
             {touched.title && errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
             <TextInput
               style={styles.input}
-              placeholder="Description"
-              onChangeText={handleChange('description')}
-              onBlur={handleBlur('description')}
-              value={values.description}
+              placeholder="Image"
+              onChangeText={handleChange('image')}
+              onBlur={handleBlur('image')}
+              value={values.image}
             />
-            {touched.description && errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+            {touched.image && errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
             <Button title="Save" onPress={handleSubmit} />
           </View>
         )}
@@ -62,11 +93,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
     borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
   },
   errorText: {
     color: 'red',
