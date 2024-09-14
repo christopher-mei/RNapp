@@ -14,16 +14,14 @@ class Card(CardBase):
     class Config:
         orm_mode = True
 
-
 class UserBase(BaseModel):
-    username: str
     email: str
 
 class UserCreate(UserBase):
     password: str
 
 class UserLogin(BaseModel):
-    username: str
+    email: str
     password: str
 
 class UserResponse(UserBase):
