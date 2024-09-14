@@ -8,7 +8,7 @@ const ApiTestPage = () => {
   const [buttonVisible, setButtonVisible] = useState(true);
 
   const fetchMessage = () => {
-    axios.get('https://accurate-rebirth-production.up.railway.app/')
+    axios.get('https://clever-peace-production.up.railway.app/')
       .then(response => {
         setMessage(response.data.message);
         setButtonVisible(false);

@@ -1,9 +1,8 @@
-// screens/EditCardScreen.js
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
 import api from '../api';
 
 const EditCardScreen = ({ route, navigation }) => {
@@ -53,7 +52,7 @@ const EditCardScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <Text style={styles.label}>{id === null ? 'Add Card' : `Edit Card ${id}`}</Text>
       <Formik
-        initialValues={{ title: card.title, image: card.image }}
+        initialValues={{ title: card?.title || '', image: card?.image || '' }}
         validationSchema={cardSchema}
         onSubmit={(values) => saveCardMutation.mutate(values)}
       >

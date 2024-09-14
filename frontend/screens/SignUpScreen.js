@@ -1,26 +1,24 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 
 const SignUpSchema = Yup.object().shape({
-  username: Yup.string().required('Username is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
-  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  password: Yup.string().required('Password is required'),
 });
 
 const SignUpScreen = () => {
   return (
     <Formik
-      initialValues={{ username: '', email: '', password: '' }}
+      initialValues={{ email: '', password: '' }}
       validationSchema={SignUpSchema}
       onSubmit={async (values, { setSubmitting }) => {
         try {
           const response = await axios.post('https://copperknot-5bc3aae4292c.herokuapp.com/users/', {
             email: values.email,
             password: values.password,
-            username: values.username,
           }, {
             headers: {
               'Content-Type': 'application/json',
@@ -53,14 +51,6 @@ const SignUpScreen = () => {
           <Text style={styles.title}>Sign Up</Text>
           <TextInput
             style={styles.input}
-            placeholder="Username"
-            onChangeText={handleChange('username')}
-            onBlur={handleBlur('username')}
-            value={values.username}
-          />
-          {touched.username && errors.username && <Text style={styles.error}>{errors.username}</Text>}
-          <TextInput
-            style={styles.input}
             placeholder="Email"
             onChangeText={handleChange('email')}
             onBlur={handleBlur('email')}
@@ -76,7 +66,7 @@ const SignUpScreen = () => {
             value={values.password}
           />
           {touched.password && errors.password && <Text style={styles.error}>{errors.password}</Text>}
-          <Button onPress={handleSubmit} title="Sign Up" />
+          <Button onPress={handleSubmit} title="Register" />
         </View>
       )}
     </Formik>
@@ -86,24 +76,22 @@ const SignUpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 16,
+    padding: 20,
   },
   title: {
     fontSize: 24,
-    marginBottom: 16,
-    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 8,
-    marginBottom: 16,
-    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
   },
   error: {
     color: 'red',
-    marginBottom: 16,
+    marginBottom: 10,
   },
 });
 
