@@ -1,32 +1,16 @@
 // screens/ManageCardsScreen.js
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Button, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
-import api from '../api';
 
 const ManageCardsScreen = ({ navigation }) => {
-  const queryClient = useQueryClient();
-
-  // Fetch cards
-  const { data: cards, isLoading } = useQuery('cards', async () => {
-    const response = await api.get('/cards/');
-    return response.data;
-  });
-
-  // Delete card mutation
-  const deleteCardMutation = useMutation(
-    async (id) => {
-      await api.delete(`/cards/${id}`);
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('cards');
-      },
-    }
-  );
+  const [cards, setCards] = useState([
+    { id: '1', title: 'Card 1', description: 'Description for Card 1' },
+    { id: '2', title: 'Card 2', description: 'Description for Card 2' },
+  ]);
 
   const addCard = () => {
-    navigation.navigate('EditCard', { id: null }); // Navigate to EditCard with no id to indicate a new card
+    const newCard = { id: (cards.length + 1).toString(), title: `Card ${cards.length + 1}`, description: `Description for Card ${cards.length + 1}` };
+    setCards([...cards, newCard]);
   };
 
   const editCard = (id) => {
@@ -37,21 +21,16 @@ const ManageCardsScreen = ({ navigation }) => {
     navigation.navigate('ViewCard', { id });
   };
 
-  if (isLoading) {
-    return <Text>Loading...</Text>;
-  }
-
   return (
     <View style={styles.container}>
       <Button title="Add Card" onPress={addCard} />
       <FlatList
         data={cards}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.card} onPress={() => viewCard(item.id)}>
             <Text style={styles.cardTitle}>{item.title}</Text>
             <Button title="Edit" onPress={() => editCard(item.id)} />
-            <Button title="Delete" onPress={() => deleteCardMutation.mutate(item.id)} />
           </TouchableOpacity>
         )}
       />

@@ -5,11 +5,10 @@ from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from models import Base, Card, SessionLocal, engine
+from models import Card, SessionLocal, engine
 import schemas
 
-# Create all tables
-Base.metadata.create_all(bind=engine)
+Card.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -28,26 +27,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-
-def add_default_cards(db: Session):
-    default_cards = [
-        {"title": "Card 1", "image": "Image 1"},
-        {"title": "Card 2", "image": "Image 2"},
-        {"title": "Card 3", "image": "Image 3"},
-    ]
-    for card_data in default_cards:
-        card = Card(**card_data)
-        db.add(card)
-    db.commit()
-
-@app.on_event("startup")
-def startup_event():
-    db = SessionLocal()
-    add_default_cards(db)
-    db.close()
-
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
