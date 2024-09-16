@@ -1,5 +1,18 @@
-# schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+from typing import Optional
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UserBase(BaseModel):
+    email: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserResponse(UserBase):
+    id: int
 
 class CardBase(BaseModel):
     title: str
@@ -10,17 +23,6 @@ class CardCreate(CardBase):
 
 class Card(CardBase):
     id: int
-
-    class Config:
-        orm_mode = True
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
 
     class Config:
         orm_mode = True

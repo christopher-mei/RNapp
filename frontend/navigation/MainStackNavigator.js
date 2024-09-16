@@ -10,6 +10,7 @@ import CardSwiperScreen from '../screens/CardSwiperScreen';
 import ManageCardsScreen from '../screens/ManageCardsScreen';
 import EditCardScreen from '../screens/EditCardScreen';
 import ViewCardScreen from '../screens/ViewCardScreen';
+import MainScreen from '../screens/MainScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ const MainStackNavigator = () => {
         <Stack.Screen name="ManageCards" component={ManageCardsScreen} />
         <Stack.Screen name="EditCard" component={EditCardScreen} />
         <Stack.Screen name="ViewCard" component={ViewCardScreen} />
+        <Stack.Screen name="MainScreen" component={MainScreen} />
       </Stack.Navigator>
     
   );
