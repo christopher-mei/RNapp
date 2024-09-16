@@ -1,17 +1,21 @@
 import os
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from passlib.context import CryptContext
 
-from models import Card, SessionLocal, engine
+from models import Card, User, SessionLocal, engine
 import schemas
 
+# Create the database tables
 Card.metadata.create_all(bind=engine)
+User.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Adjust this to your needs
@@ -20,13 +24,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency
+# Dependency to get the database session
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -83,6 +93,18 @@ def delete_card(card_id: int, db: Session = Depends(get_db)):
     db.delete(db_card)
     db.commit()
     return db_card
+
+@app.post("/users/", response_model=schemas.UserResponse)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.email == user.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    hashed_password = get_password_hash(user.password)
+    db_user = User(email=user.email, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
