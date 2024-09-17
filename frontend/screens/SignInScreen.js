@@ -18,13 +18,12 @@ const SignInSchema = Yup.object().shape({
 
 // Function to handle user sign-in
 const signInUser = async (values) => {
-  const response = await axios.post('https://clever-peace-production.up.railway.app/auth/login', {
-    email: values.email,
+  const response = await axios.post('https://clever-peace-production.up.railway.app/token', new URLSearchParams({
+    username: values.email,
     password: values.password,
-  }, {
+  }), {
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': '*/*',
+      'Content-Type': 'application/x-www-form-urlencoded',
     }
   });
   return response.data;
@@ -35,7 +34,7 @@ const SignInScreen = () => {
   const mutation = useMutation(signInUser, {
     onSuccess: async (data) => {
       // Store the token securely
-      await AsyncStorage.setItem('authToken', data.token);
+      await AsyncStorage.setItem('authToken', data.access_token);
       // Navigate to the main screen
       navigation.navigate('MainScreen');
       // Show success message
@@ -45,7 +44,7 @@ const SignInScreen = () => {
       if (error.response) {
         // Server responded with a status other than 200 range
         console.error("Error response", error.response.data);
-        Alert.alert("Error", `Failed to sign in: ${error.response.data.message}`);
+        Alert.alert("Error", `Failed to sign in: ${error.response.data.detail}`);
       } else if (error.request) {
         // Request was made but no response received
         console.error("Error request", error.request);

@@ -7,6 +7,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Function to fetch user data
 const fetchUserData = async () => {
   const token = await AsyncStorage.getItem('authToken');
+  console.log('Retrieved token:', token); // Debugging line
+  if (!token) {
+    throw new Error('No token found');
+  }
   const response = await axios.get('https://clever-peace-production.up.railway.app/users/me', {
     headers: {
       'Authorization': `Bearer ${token}`,
