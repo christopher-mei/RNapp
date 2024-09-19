@@ -1,4 +1,5 @@
 import os
+import logging  # Correctly import logging
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -10,12 +11,15 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 
-from models import Card, User, SessionLocal, engine
-import schemas
+from .models import Card, User
+from .schemas import CardCreate, UserCreate, Card as CardSchema, UserResponse as UserResponseSchema, Token as TokenSchema  # Ensure this import worksimport logging
+from .database import SessionLocal, engine, Base  # Import from database.py
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Create the database tables
-Card.metadata.create_all(bind=engine)
-User.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -42,10 +46,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
-
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -65,27 +67,27 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
-
-
-
-
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
-def fake_decode_token(token: str):
-    # This is a placeholder function. Replace with actual token decoding logic.
-    return token
-
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    email = fake_decode_token(token)
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        logger.info(f"Token decoded successfully, email: {email}")
+    except JWTError as e:
+        logger.error(f"JWTError: {e}")
+        raise credentials_exception
     user = get_user_by_email(db, email)
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
     return user
 
 @app.get("/", response_class=HTMLResponse)
@@ -104,28 +106,28 @@ async def read_root():
     """
     return HTMLResponse(content=html_content)
 
-@app.post("/cards/", response_model=schemas.Card)
-def create_card(card: schemas.CardCreate, db: Session = Depends(get_db)):
+@app.post("/cards/", response_model=CardSchema)
+def create_card(card: CardCreate, db: Session = Depends(get_db)):
     db_card = Card(title=card.title, image=card.image)
     db.add(db_card)
     db.commit()
     db.refresh(db_card)
     return db_card
 
-@app.get("/cards/", response_model=List[schemas.Card])
+@app.get("/cards/", response_model=List[CardSchema])
 def read_cards(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     cards = db.query(Card).offset(skip).limit(limit).all()
     return cards
 
-@app.get("/cards/{card_id}", response_model=schemas.Card)
+@app.get("/cards/{card_id}", response_model=CardSchema)
 def read_card(card_id: int, db: Session = Depends(get_db)):
     card = db.query(Card).filter(Card.id == card_id).first()
     if card is None:
         raise HTTPException(status_code=404, detail="Card not found")
     return card
 
-@app.put("/cards/{card_id}", response_model=schemas.Card)
-def update_card(card_id: int, card: schemas.CardCreate, db: Session = Depends(get_db)):
+@app.put("/cards/{card_id}", response_model=CardSchema)
+def update_card(card_id: int, card: CardCreate, db: Session = Depends(get_db)):
     db_card = db.query(Card).filter(Card.id == card_id).first()
     if db_card is None:
         raise HTTPException(status_code=404, detail="Card not found")
@@ -135,7 +137,8 @@ def update_card(card_id: int, card: schemas.CardCreate, db: Session = Depends(ge
     db.refresh(db_card)
     return db_card
 
-@app.delete("/cards/{card_id}", response_model=schemas.Card)
+
+@app.delete("/cards/{card_id}", response_model=CardSchema)
 def delete_card(card_id: int, db: Session = Depends(get_db)):
     db_card = db.query(Card).filter(Card.id == card_id).first()
     if db_card is None:
@@ -144,8 +147,8 @@ def delete_card(card_id: int, db: Session = Depends(get_db)):
     db.commit()
     return db_card
 
-@app.post("/users/", response_model=schemas.UserResponse)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@app.post("/users/", response_model=UserResponseSchema)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -156,8 +159,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
-
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", response_model=TokenSchema)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = get_user_by_email(db, form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -172,9 +174,8 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-@app.get("/users/me", response_model=schemas.UserResponse)
-async def read_users_me(current_user: schemas.UserResponse = Depends(get_current_user)):
+@app.get("/users/me", response_model=UserResponseSchema)
+async def read_users_me(current_user: UserResponseSchema = Depends(get_current_user)):
     return current_user
 
 if __name__ == "__main__":
